@@ -1,0 +1,15 @@
+.products{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:20px;
+}
+
+.card{
+border:1px solid #ddd;
+padding:10px;
+text-align:center;
+}
+
+.card img{
+width:100%;
+}
