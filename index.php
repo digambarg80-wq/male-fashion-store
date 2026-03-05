@@ -17,7 +17,9 @@ $result = mysqli_query($conn,$query);
 
 <p>₹<?php echo $row['price']; ?></p>
 
-<button>Add to Cart</button>
+<a href="add-cart.php?id=<?php echo $row['id']; ?>">
+    <button>Add to Cart</button>
+</a>
 
 </div>
 
