@@ -10,84 +10,46 @@ $stmt = $pdo->prepare("SELECT p.*, c.name as category_name
                        WHERE p.category_id = 3");
 $stmt->execute();
 $products = $stmt->fetchAll();
+
+// Get category name
+$cat_stmt = $pdo->query("SELECT name FROM categories WHERE id = 3");
+$category = $cat_stmt->fetch();
 ?>
 
 <style>
-    .category-hero {
-        background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=1400');
-        background-size: cover;
-        background-position: center;
-        height: 300px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-    
-    .category-hero h1 {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-    }
-    
-    .filter-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem 2rem;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        margin-bottom: 2rem;
-    }
+.category-hero {
+    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.pexels.com/photos/267301/pexels-photo-267301.jpeg');
+    background-size: cover;
+    background-position: center;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.category-hero h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
 </style>
 
 <!-- Category Hero Section -->
 <div class="category-hero">
     <div>
-        <h1>Men's Accessories</h1>
-        <p>Caps, backpacks, watches & more</p>
-    </div>
-</div>
-
-<!-- Filter Bar -->
-<div class="filter-bar">
-    <div>
-        <span style="font-weight: bold;"><?php echo count($products); ?></span> products found
-    </div>
-    <div class="filter-options">
-        <select class="filter-select">
-            <option>Sort by: Featured</option>
-            <option>Price: Low to High</option>
-            <option>Price: High to Low</option>
-        </select>
-        <select class="filter-select">
-            <option>Type</option>
-            <option>Caps</option>
-            <option>Backpacks</option>
-            <option>Watches</option>
-            <option>Socks</option>
-        </select>
+        <h1><?php echo $category['name']; ?></h1>
+        <p>Discover our collection of <?php echo strtolower($category['name']); ?></p>
     </div>
 </div>
 
 <!-- Products Grid -->
 <section class="products-section">
-    <?php if(empty($products)): ?>
-    <div style="text-align: center; padding: 4rem;">
-        <span class="material-icons" style="font-size: 80px; color: #999;">watch</span>
-        <h3>No accessories found</h3>
-        <p>Check back later for new arrivals.</p>
-    </div>
-    <?php else: ?>
     <div class="products-grid">
         <?php foreach($products as $product): ?>
-        <a href="product-detail.php?id=<?php echo $product['id']; ?>" class="product-card">
+        <a href="/male-fashion-store/product-detail.php?id=<?php echo $product['id']; ?>" class="product-card">
             <div class="product-image">
-                <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); display: flex; align-items: center; justify-content: center;">
-                    <span class="material-icons" style="font-size: 80px; color: white;">watch</span>
-                </div>
+                <img src="<?php echo $product['image']; ?>" alt="<?php echo $product['name']; ?>" style="width: 100%; height: 100%; object-fit: cover;">
                 <?php if($product['sale_price']): ?>
                 <span class="product-badge">SALE</span>
                 <?php endif; ?>
@@ -97,7 +59,7 @@ $products = $stmt->fetchAll();
             </div>
             <div class="product-info">
                 <h3><?php echo $product['name']; ?></h3>
-                <p class="product-category">Accessories</p>
+                <p class="product-category"><?php echo $product['category_name']; ?></p>
                 <div class="product-price">
                     <?php if($product['sale_price']): ?>
                         <span class="sale-price">₹<?php echo number_format($product['sale_price']); ?></span>
@@ -110,7 +72,6 @@ $products = $stmt->fetchAll();
         </a>
         <?php endforeach; ?>
     </div>
-    <?php endif; ?>
 </section>
 
 <?php include 'includes/footer.php'; ?>

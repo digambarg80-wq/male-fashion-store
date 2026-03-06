@@ -12,7 +12,7 @@ try {
     die("Connection failed: " . $e->getMessage());
 }
 
-// Start session for user login
+// Start session if not started
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }

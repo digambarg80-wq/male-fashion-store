@@ -1,14 +1,11 @@
 <?php
-// Database helper functions
-
 function getFeaturedProducts($pdo, $limit = 8) {
-    // Fixed version - no more error
     $stmt = $pdo->query("SELECT p.*, c.name as category_name 
                          FROM products p 
                          LEFT JOIN categories c ON p.category_id = c.id 
                          WHERE p.featured = TRUE 
                          ORDER BY p.created_at DESC 
-                         LIMIT " . $limit);
+                         LIMIT $limit");
     return $stmt->fetchAll();
 }
 
@@ -43,5 +40,12 @@ function searchProducts($pdo, $query) {
                            WHERE p.name LIKE ? OR p.description LIKE ?");
     $stmt->execute([$search, $search]);
     return $stmt->fetchAll();
+}
+
+function getCartCount($pdo, $user_id) {
+    $stmt = $pdo->prepare("SELECT SUM(quantity) as count FROM cart WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+    $result = $stmt->fetch();
+    return $result['count'] ?? 0;
 }
 ?>

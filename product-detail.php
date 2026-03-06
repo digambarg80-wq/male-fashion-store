@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/db_connect.php';
+require_once 'includes/db.php';
 require_once 'includes/functions.php';
 include 'includes/header.php';
 
@@ -14,7 +14,8 @@ if (!$product) {
 
 <section class="product-detail">
     <div class="product-gallery">
-        <img src="https://via.placeholder.com/800x1000?text=<?php echo urlencode($product['name']); ?>" alt="<?php echo $product['name']; ?>" class="main-image">
+        <!-- This will show the image from the database -->
+        <img src="<?php echo $product['image']; ?>" alt="<?php echo $product['name']; ?>" class="main-image" style="width: 100%; height: auto; border-radius: 8px;">
     </div>
     
     <div class="product-info-detail">
@@ -39,11 +40,21 @@ if (!$product) {
         <div class="size-section">
             <h3>Select Size</h3>
             <div class="size-selector">
-                <button class="size-btn">S</button>
-                <button class="size-btn">M</button>
-                <button class="size-btn">L</button>
-                <button class="size-btn">XL</button>
-                <button class="size-btn">XXL</button>
+                <?php if($product['category_id'] == 1): // Shoes ?>
+                    <button class="size-btn">7</button>
+                    <button class="size-btn">8</button>
+                    <button class="size-btn">9</button>
+                    <button class="size-btn">10</button>
+                    <button class="size-btn">11</button>
+                <?php elseif($product['category_id'] == 2): // Clothing ?>
+                    <button class="size-btn">S</button>
+                    <button class="size-btn">M</button>
+                    <button class="size-btn">L</button>
+                    <button class="size-btn">XL</button>
+                    <button class="size-btn">XXL</button>
+                <?php else: // Accessories ?>
+                    <button class="size-btn">One Size</button>
+                <?php endif; ?>
             </div>
         </div>
         
@@ -56,7 +67,7 @@ if (!$product) {
             </div>
         </div>
         
-        <button class="add-to-cart">Add to Cart</button>
+        <button class="add-to-cart" onclick="addToCart(<?php echo $product['id']; ?>)">Add to Cart</button>
         
         <div class="product-meta">
             <p><strong>Availability:</strong> <?php echo $product['stock'] > 0 ? 'In Stock' : 'Out of Stock'; ?></p>
@@ -64,5 +75,24 @@ if (!$product) {
         </div>
     </div>
 </section>
+
+<script>
+function addToCart(productId) {
+    <?php if(isset($_SESSION['user_id'])): ?>
+    fetch('/male-fashion-store/add-to-cart.php?id=' + productId)
+    .then(response => response.json())
+    .then(data => {
+        if(data.success) {
+            alert('Product added to cart!');
+            updateCartCount();
+        }
+    });
+    <?php else: ?>
+    if(confirm('Please login to add items to cart')) {
+        window.location.href = '/male-fashion-store/login.php';
+    }
+    <?php endif; ?>
+}
+</script>
 
 <?php include 'includes/footer.php'; ?>

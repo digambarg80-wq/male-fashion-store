@@ -4,27 +4,28 @@
             <div class="footer-section">
                 <h3>Shop</h3>
                 <ul>
-                    <li><a href="products.php?category=1">Shoes</a></li>
-                    <li><a href="products.php?category=2">Clothing</a></li>
-                    <li><a href="products.php?category=3">Accessories</a></li>
-                    <li><a href="products.php?category=4">Sports Wear</a></li>
+                    <li><a href="/male-fashion-store/shoes.php">Shoes</a></li>
+                    <li><a href="/male-fashion-store/clothing.php">Clothing</a></li>
+                    <li><a href="/male-fashion-store/accessories.php">Accessories</a></li>
+                    <li><a href="/male-fashion-store/sports-wear.php">Sports Wear</a></li>
+                    <li><a href="/male-fashion-store/new-arrivals.php">New Arrivals</a></li>
                 </ul>
             </div>
             <div class="footer-section">
                 <h3>Help</h3>
                 <ul>
-                    <li><a href="#">Size Guide</a></li>
-                    <li><a href="#">Shipping</a></li>
-                    <li><a href="#">Returns</a></li>
-                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="/male-fashion-store/size-guide.php">Size Guide</a></li>
+                    <li><a href="/male-fashion-store/shipping.php">Shipping</a></li>
+                    <li><a href="/male-fashion-store/returns.php">Returns</a></li>
+                    <li><a href="/male-fashion-store/contact.php">Contact Us</a></li>
                 </ul>
             </div>
             <div class="footer-section">
                 <h3>About</h3>
                 <ul>
-                    <li><a href="#">Our Story</a></li>
-                    <li><a href="#">Careers</a></li>
-                    <li><a href="#">Sustainability</a></li>
+                    <li><a href="/male-fashion-store/our-story.php">Our Story</a></li>
+                    <li><a href="/male-fashion-store/careers.php">Careers</a></li>
+                    <li><a href="/male-fashion-store/sustainability.php">Sustainability</a></li>
                 </ul>
             </div>
             <div class="footer-section">
@@ -37,18 +38,18 @@
                 </div>
                 <div class="newsletter">
                     <p>Sign up for updates</p>
-                    <form>
-                        <input type="email" placeholder="Email address">
+                    <form action="/male-fashion-store/subscribe.php" method="POST">
+                        <input type="email" name="email" placeholder="Email address" required>
                         <button type="submit">→</button>
                     </form>
                 </div>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2024 Mens Fashion Store. All rights reserved.</p>
+            <p>&copy; 2026 Mens Fashion Store. All rights reserved.</p>
         </div>
     </footer>
 
-    <script src="js/script.js"></script>
+    <script src="/male-fashion-store/js/script.js"></script>
 </body>
 </html>

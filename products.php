@@ -1,39 +1,23 @@
 <?php
+// This is the same as product.php - just rename it
+// But let's create a proper products.php
 require_once 'includes/db.php';
 require_once 'includes/functions.php';
 include 'includes/header.php';
 
-$category_id = isset($_GET['category']) ? (int)$_GET['category'] : null;
-$search = isset($_GET['search']) ? $_GET['search'] : '';
-
-if ($search) {
-    $products = searchProducts($pdo, $search);
-    $pageTitle = "Search Results: " . $search;
-} elseif ($category_id) {
-    $stmt = $pdo->prepare("SELECT * FROM products WHERE category_id = ?");
-    $stmt->execute([$category_id]);
-    $products = $stmt->fetchAll();
-    
-    $catStmt = $pdo->prepare("SELECT name FROM categories WHERE id = ?");
-    $catStmt->execute([$category_id]);
-    $category = $catStmt->fetch();
-    $pageTitle = $category ? $category['name'] : 'Products';
-} else {
-    $stmt = $pdo->query("SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id ORDER BY p.created_at DESC");
-    $products = $stmt->fetchAll();
-    $pageTitle = 'All Products';
-}
+// Get all products
+$stmt = $pdo->query("SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id ORDER BY p.created_at DESC");
+$products = $stmt->fetchAll();
 ?>
 
 <section class="products-section">
-    <h2 class="section-title"><?php echo $pageTitle; ?></h2>
+    <h2 class="section-title">All Products</h2>
     
     <?php if(empty($products)): ?>
     <div style="text-align: center; padding: 4rem;">
-        <span class="material-icons" style="font-size: 80px; color: #999;">search_off</span>
+        <span class="material-icons" style="font-size: 80px; color: #999;">category</span>
         <h3>No products found</h3>
-        <p>Try checking back later or browse other categories.</p>
-        <a href="products.php" class="btn btn-primary" style="display: inline-block; margin-top: 1rem;">View All Products</a>
+        <a href="index.php" class="btn btn-primary">Go Home</a>
     </div>
     <?php else: ?>
     <div class="products-grid">
@@ -63,7 +47,7 @@ if ($search) {
             </div>
             <div class="product-info">
                 <h3><?php echo $product['name']; ?></h3>
-                <p class="product-category"><?php echo $category['name'] ?? ''; ?></p>
+                <p class="product-category"><?php echo $product['category_name']; ?></p>
                 <div class="product-price">
                     <?php if($product['sale_price']): ?>
                         <span class="sale-price">₹<?php echo number_format($product['sale_price']); ?></span>
