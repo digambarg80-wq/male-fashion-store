@@ -3,6 +3,7 @@
 include("db.php");
 
 $product_id = $_GET['id'];
+
 $user_id = 1;
 $quantity = 1;
 

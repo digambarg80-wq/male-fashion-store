@@ -1,13 +1,13 @@
 <?php
-require_once 'includes/auth.php';
+require_once '../includes/auth.php';
 
 // Redirect if not admin
 if(!isAdmin()) {
-    header('Location: login.php');
+    header('Location: ../login.php');
     exit;
 }
 
-require_once 'includes/db.php';
+require_once '../includes/db.php';
 
 // Handle product operations
 if(isset($_POST['add_product'])) {
@@ -35,16 +35,15 @@ if(isset($_GET['delete'])) {
 // Get statistics
 $total_users = $pdo->query("SELECT COUNT(*) FROM users WHERE user_type = 'customer'")->fetchColumn();
 $total_products = $pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
-$total_orders = 0; // You can add orders table later
 $recent_users = $pdo->query("SELECT * FROM users WHERE user_type = 'customer' ORDER BY created_at DESC LIMIT 5")->fetchAll();
 
-include 'includes/header.php';
+include '../includes/header.php';
 ?>
 
 <div class="admin-dashboard" style="max-width: 1400px; margin: 2rem auto; padding: 2rem;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
         <h1>Admin Dashboard</h1>
-        <a href="logout.php" class="btn btn-danger">Logout</a>
+        <a href="../logout.php" class="btn btn-danger">Logout</a>
     </div>
 
     <?php if(isset($message)): ?>
@@ -62,7 +61,7 @@ include 'includes/header.php';
             <p style="margin: 0;">Total Products</p>
         </div>
         <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 1.5rem; border-radius: 8px;">
-            <h3 style="margin: 0; font-size: 2rem;"><?php echo $total_orders; ?></h3>
+            <h3 style="margin: 0; font-size: 2rem;">0</h3>
             <p style="margin: 0;">Total Orders</p>
         </div>
         <div style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 1.5rem; border-radius: 8px;">
@@ -71,7 +70,7 @@ include 'includes/header.php';
         </div>
     </div>
 
-    <!-- Tabs -->
+    <!-- Admin Navigation -->
     <div style="display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 2px solid #f0f0f0; padding-bottom: 1rem;">
         <button onclick="showAdminTab('products')" id="productsTabBtn" class="btn btn-primary">Products</button>
         <button onclick="showAdminTab('users')" id="usersTabBtn" class="btn">Users</button>
@@ -81,9 +80,6 @@ include 'includes/header.php';
     <!-- Products Tab -->
     <div id="adminProductsTab">
         <h2>Manage Products</h2>
-        <?php
-        $products = $pdo->query("SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id ORDER BY p.id DESC")->fetchAll();
-        ?>
         <table style="width: 100%; border-collapse: collapse;">
             <thead>
                 <tr style="background: #f5f5f5;">
@@ -97,7 +93,10 @@ include 'includes/header.php';
                 </tr>
             </thead>
             <tbody>
-                <?php foreach($products as $product): ?>
+                <?php
+                $products = $pdo->query("SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.id ORDER BY p.id DESC")->fetchAll();
+                foreach($products as $product):
+                ?>
                 <tr style="border-bottom: 1px solid #f0f0f0;">
                     <td style="padding: 1rem;"><?php echo $product['id']; ?></td>
                     <td style="padding: 1rem;"><?php echo $product['name']; ?></td>
@@ -124,7 +123,6 @@ include 'includes/header.php';
                     <th style="padding: 1rem; text-align: left;">Username</th>
                     <th style="padding: 1rem; text-align: left;">Full Name</th>
                     <th style="padding: 1rem; text-align: left;">Email</th>
-                    <th style="padding: 1rem; text-align: left;">Phone</th>
                     <th style="padding: 1rem; text-align: left;">Joined</th>
                 </tr>
             </thead>
@@ -138,7 +136,6 @@ include 'includes/header.php';
                     <td style="padding: 1rem;"><?php echo $user['username']; ?></td>
                     <td style="padding: 1rem;"><?php echo $user['full_name']; ?></td>
                     <td style="padding: 1rem;"><?php echo $user['email']; ?></td>
-                    <td style="padding: 1rem;"><?php echo $user['phone'] ?: '-'; ?></td>
                     <td style="padding: 1rem;"><?php echo date('d M Y', strtotime($user['created_at'])); ?></td>
                 </tr>
                 <?php endforeach; ?>
@@ -178,7 +175,7 @@ include 'includes/header.php';
             </div>
             
             <div class="form-group">
-                <label>Sale Price (₹) - Leave empty if no sale:</label>
+                <label>Sale Price (₹):</label>
                 <input type="number" name="sale_price" step="0.01">
             </div>
             
@@ -224,4 +221,4 @@ function showAdminTab(tab) {
 }
 </script>
 
-<?php include 'includes/footer.php'; ?>
+<?php include '../includes/footer.php'; ?>

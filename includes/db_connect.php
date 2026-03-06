@@ -11,9 +11,4 @@ try {
 } catch(PDOException $e) {
     die("Connection failed: " . $e->getMessage());
 }
-
-// Start session for user login
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
 ?>

@@ -1,0 +1,157 @@
+<?php
+require_once 'includes/db.php';
+require_once 'includes/functions.php';
+include 'includes/header.php';
+
+// Get clothing (category_id = 2)
+$stmt = $pdo->prepare("SELECT p.*, c.name as category_name 
+                       FROM products p 
+                       LEFT JOIN categories c ON p.category_id = c.id 
+                       WHERE p.category_id = 2");
+$stmt->execute();
+$products = $stmt->fetchAll();
+?>
+
+<style>
+    .category-hero {
+        background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1539533018447-63fcce2678e3?w=1400');
+        background-size: cover;
+        background-position: center;
+        height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .category-hero h1 {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+    
+    .filter-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .filter-options {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .filter-select {
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.9rem;
+    }
+    
+    .size-chart {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    
+    .size-btn {
+        width: 40px;
+        height: 40px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    
+    .size-btn:hover {
+        background: #000;
+        color: white;
+    }
+</style>
+
+<!-- Category Hero Section -->
+<div class="category-hero">
+    <div>
+        <h1>Men's Clothing</h1>
+        <p>Explore t-shirts, hoodies, joggers & more</p>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+    <div>
+        <span style="font-weight: bold;"><?php echo count($products); ?></span> products found
+    </div>
+    <div class="filter-options">
+        <select class="filter-select">
+            <option>Sort by: Featured</option>
+            <option>Price: Low to High</option>
+            <option>Price: High to Low</option>
+            <option>Newest First</option>
+        </select>
+        <select class="filter-select">
+            <option>Size</option>
+            <option>S</option>
+            <option>M</option>
+            <option>L</option>
+            <option>XL</option>
+            <option>XXL</option>
+        </select>
+        <select class="filter-select">
+            <option>Category</option>
+            <option>T-Shirts</option>
+            <option>Hoodies</option>
+            <option>Joggers</option>
+            <option>Jeans</option>
+        </select>
+    </div>
+</div>
+
+<!-- Products Grid -->
+<section class="products-section">
+    <?php if(empty($products)): ?>
+    <div style="text-align: center; padding: 4rem;">
+        <span class="material-icons" style="font-size: 80px; color: #999;">checkroom</span>
+        <h3>No clothing items found</h3>
+        <p>Check back later for new arrivals.</p>
+    </div>
+    <?php else: ?>
+    <div class="products-grid">
+        <?php foreach($products as $product): ?>
+        <a href="product-detail.php?id=<?php echo $product['id']; ?>" class="product-card">
+            <div class="product-image">
+                <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center;">
+                    <span class="material-icons" style="font-size: 80px; color: white;">checkroom</span>
+                </div>
+                <?php if($product['sale_price']): ?>
+                <span class="product-badge">SALE</span>
+                <?php endif; ?>
+                <div class="product-overlay">
+                    <button class="quick-view">Quick View</button>
+                </div>
+            </div>
+            <div class="product-info">
+                <h3><?php echo $product['name']; ?></h3>
+                <p class="product-category">Clothing</p>
+                <div class="product-price">
+                    <?php if($product['sale_price']): ?>
+                        <span class="sale-price">₹<?php echo number_format($product['sale_price']); ?></span>
+                        <span class="original-price">₹<?php echo number_format($product['price']); ?></span>
+                    <?php else: ?>
+                        <span>₹<?php echo number_format($product['price']); ?></span>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </a>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+</section>
+
+<?php include 'includes/footer.php'; ?>
