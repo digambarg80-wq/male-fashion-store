@@ -465,19 +465,30 @@ include '../includes/header.php';
                 </div>
                 
                 <div class="stats-grid">
+                    <?php
+                    // Get real order count
+                    $order_count = $pdo->prepare("SELECT COUNT(*) as count FROM orders WHERE user_id = ?");
+                    $order_count->execute([$_SESSION['user_id']]);
+                    $total_orders = $order_count->fetch()['count'];
+                    
+                    // Get real wishlist count
+                    $wishlist_count = $pdo->prepare("SELECT COUNT(*) as count FROM wishlist WHERE user_id = ?");
+                    $wishlist_count->execute([$_SESSION['user_id']]);
+                    $total_wishlist = $wishlist_count->fetch()['count'];
+                    ?>
                     <div class="stat-card">
                         <span class="material-icons">shopping_bag</span>
-                        <h3>0</h3>
+                        <h3><?php echo $total_orders; ?></h3>
                         <p>Total Orders</p>
                     </div>
                     <div class="stat-card">
                         <span class="material-icons">favorite</span>
-                        <h3>0</h3>
+                        <h3><?php echo $total_wishlist; ?></h3>
                         <p>Wishlist Items</p>
                     </div>
                     <div class="stat-card">
                         <span class="material-icons">star</span>
-                        <h3>New</h3>
+                        <h3>Active</h3>
                         <p>Member Status</p>
                     </div>
                 </div>
@@ -565,31 +576,71 @@ include '../includes/header.php';
                 </form>
             </div>
             
-            <!-- Orders Section -->
+            <!-- Orders Section - FIXED -->
             <div id="section-orders" class="profile-section">
                 <div class="section-title">
                     <span class="material-icons">shopping_bag</span>
                     <h2>My Orders</h2>
                 </div>
+
+                <?php
+                // Get user's orders from database
+                $stmt = $pdo->prepare("SELECT * FROM orders WHERE user_id = ? ORDER BY order_date DESC");
+                $stmt->execute([$_SESSION['user_id']]);
+                $user_orders = $stmt->fetchAll();
                 
-                <div style="text-align: center; padding: 3rem; background: #f8f9fa; border-radius: 12px;">
-                    <span class="material-icons" style="font-size: 60px; color: #999;">inbox</span>
-                    <h3>No orders yet</h3>
-                    <p>When you place orders, they will appear here.</p>
-                    <a href="../products.php" class="btn btn-primary" style="display: inline-flex; margin-top: 1rem;">
-                        <span class="material-icons">shopping_cart</span>
-                        Start Shopping
-                    </a>
-                </div>
+                if(empty($user_orders)):
+                ?>
+                    <div style="text-align: center; padding: 3rem; background: #f8f9fa; border-radius: 12px;">
+                        <span class="material-icons" style="font-size: 60px; color: #999;">inbox</span>
+                        <h3>No orders yet</h3>
+                        <p>When you place orders, they will appear here.</p>
+                        <a href="../products.php" class="btn btn-primary" style="display: inline-flex; margin-top: 1rem;">
+                            <span class="material-icons">shopping_cart</span>
+                            Start Shopping
+                        </a>
+                    </div>
+                <?php else: ?>
+                    <div class="orders-list">
+                        <?php foreach($user_orders as $order): ?>
+                        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #667eea;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <strong>Order #: <?php echo $order['order_number']; ?></strong>
+                                <span style="color: <?php echo $order['status'] == 'delivered' ? '#28a745' : '#f39c12'; ?>">
+                                    <?php echo ucfirst($order['status']); ?>
+                                </span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Date: <?php echo date('d M Y', strtotime($order['order_date'])); ?></span>
+                                <span>Total: ₹<?php echo number_format($order['total_amount']); ?></span>
+                            </div>
+                            <div style="margin-top: 1rem;">
+                                <a href="../invoice.php?order=<?php echo $order['order_number']; ?>" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">View Invoice</a>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
             </div>
             
-            <!-- Wishlist Section -->
+            <!-- Wishlist Section - FIXED -->
             <div id="section-wishlist" class="profile-section">
                 <div class="section-title">
                     <span class="material-icons">favorite</span>
                     <h2>My Wishlist</h2>
                 </div>
                 
+                <?php
+                // Get user's wishlist
+                $stmt = $pdo->prepare("SELECT w.*, p.name, p.price, p.sale_price, p.image 
+                                       FROM wishlist w 
+                                       JOIN products p ON w.product_id = p.id 
+                                       WHERE w.user_id = ?");
+                $stmt->execute([$_SESSION['user_id']]);
+                $wishlist_items = $stmt->fetchAll();
+                
+                if(empty($wishlist_items)):
+                ?>
                 <div style="text-align: center; padding: 3rem; background: #f8f9fa; border-radius: 12px;">
                     <span class="material-icons" style="font-size: 60px; color: #999;">favorite_border</span>
                     <h3>Your wishlist is empty</h3>
@@ -599,6 +650,27 @@ include '../includes/header.php';
                         Browse Products
                     </a>
                 </div>
+                <?php else: ?>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+                        <?php foreach($wishlist_items as $item): ?>
+                        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; text-align: center;">
+                            <?php if(!empty($item['image'])): ?>
+                            <img src="<?php echo $item['image']; ?>" alt="<?php echo $item['name']; ?>" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 0.5rem;">
+                            <?php else: ?>
+                            <div style="width: 100%; height: 150px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center;">
+                                <span class="material-icons" style="font-size: 50px; color: white;">favorite</span>
+                            </div>
+                            <?php endif; ?>
+                            <h4 style="margin: 0.5rem 0;"><?php echo $item['name']; ?></h4>
+                            <p style="font-weight: bold; color: #667eea;">₹<?php echo number_format($item['sale_price'] ?: $item['price']); ?></p>
+                            <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                                <a href="../product-detail.php?id=<?php echo $item['product_id']; ?>" class="btn btn-primary" style="padding: 0.5rem;">View</a>
+                                <a href="remove-from-wishlist.php?id=<?php echo $item['id']; ?>" class="btn btn-outline" style="padding: 0.5rem;" onclick="return confirm('Remove from wishlist?')">Remove</a>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
             </div>
             
             <!-- Change Password Section -->
@@ -668,4 +740,4 @@ if(window.location.hash) {
 }
 </script>
 
-<?php include '../includes/footer.php'; ?>  
+<?php include '../includes/footer.php'; ?>

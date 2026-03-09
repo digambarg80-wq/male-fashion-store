@@ -31,11 +31,11 @@
             <div class="footer-section">
                 <h3>Follow Us</h3>
                 <div class="social-links">
-                    <a href="#" class="social-link">FB</a>
-                    <a href="#" class="social-link">IG</a>
-                    <a href="#" class="social-link">TW</a>
-                    <a href="#" class="social-link">YT</a>
-                </div>
+    <a href="https://www.facebook.com/digambar.gaikwad.37669528" target="_blank" class="social-link">FB</a>
+    <a href="https://www.instagram.com/digambar__gaikwad/" target="_blank" class="social-link">IG</a>
+    <a href="https://x.com/digambarg80" target="_blank" class="social-link">TW</a>
+    <a href="https://www.youtube.com/@digambargaikwad1220" target="_blank" class="social-link">YT</a>
+</div>
                 <div class="newsletter">
                     <p>Sign up for updates</p>
                     <form action="/male-fashion-store/subscribe.php" method="POST">
