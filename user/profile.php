@@ -21,7 +21,7 @@ if(isset($_POST['update_profile'])) {
     $stmt = $pdo->prepare("UPDATE users SET full_name = ?, phone = ?, address = ? WHERE id = ?");
     if($stmt->execute([$full_name, $phone, $address, $_SESSION['user_id']])) {
         $message = "Profile updated successfully!";
-        $user = getCurrentUser(); // Refresh user data
+        $user = getCurrentUser();
     } else {
         $error = "Failed to update profile.";
     }
@@ -367,6 +367,87 @@ include '../includes/header.php';
         opacity: 0.9;
     }
     
+    .order-card {
+        background: white;
+        border-radius: 12px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        overflow: hidden;
+    }
+    
+    .order-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .order-body {
+        padding: 1.5rem;
+    }
+    
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .order-total {
+        display: flex;
+        justify-content: space-between;
+        padding: 1rem 0;
+        font-weight: bold;
+    }
+    
+    .order-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 2px solid #f0f0f0;
+    }
+    
+    .wishlist-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+    
+    .wishlist-item {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        text-align: center;
+    }
+    
+    .wishlist-image {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .wishlist-placeholder {
+        width: 100%;
+        height: 150px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .wishlist-placeholder .material-icons {
+        font-size: 50px;
+        color: white;
+    }
+    
     @media (max-width: 768px) {
         .profile-grid {
             grid-template-columns: 1fr;
@@ -466,12 +547,10 @@ include '../includes/header.php';
                 
                 <div class="stats-grid">
                     <?php
-                    // Get real order count
                     $order_count = $pdo->prepare("SELECT COUNT(*) as count FROM orders WHERE user_id = ?");
                     $order_count->execute([$_SESSION['user_id']]);
                     $total_orders = $order_count->fetch()['count'];
                     
-                    // Get real wishlist count
                     $wishlist_count = $pdo->prepare("SELECT COUNT(*) as count FROM wishlist WHERE user_id = ?");
                     $wishlist_count->execute([$_SESSION['user_id']]);
                     $total_wishlist = $wishlist_count->fetch()['count'];
@@ -576,7 +655,7 @@ include '../includes/header.php';
                 </form>
             </div>
             
-            <!-- Orders Section - FIXED -->
+            <!-- Orders Section with Reorder -->
             <div id="section-orders" class="profile-section">
                 <div class="section-title">
                     <span class="material-icons">shopping_bag</span>
@@ -584,7 +663,6 @@ include '../includes/header.php';
                 </div>
 
                 <?php
-                // Get user's orders from database
                 $stmt = $pdo->prepare("SELECT * FROM orders WHERE user_id = ? ORDER BY order_date DESC");
                 $stmt->execute([$_SESSION['user_id']]);
                 $user_orders = $stmt->fetchAll();
@@ -602,20 +680,50 @@ include '../includes/header.php';
                     </div>
                 <?php else: ?>
                     <div class="orders-list">
-                        <?php foreach($user_orders as $order): ?>
-                        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #667eea;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                <strong>Order #: <?php echo $order['order_number']; ?></strong>
-                                <span style="color: <?php echo $order['status'] == 'delivered' ? '#28a745' : '#f39c12'; ?>">
+                        <?php foreach($user_orders as $order): 
+                            $items_stmt = $pdo->prepare("SELECT oi.*, p.name FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?");
+                            $items_stmt->execute([$order['id']]);
+                            $order_items = $items_stmt->fetchAll();
+                        ?>
+                        <div class="order-card">
+                            <div class="order-header">
+                                <div>
+                                    <strong>Order #: <?php echo $order['order_number']; ?></strong>
+                                    <span style="margin-left: 1rem; font-size: 0.9rem;">
+                                        <?php echo date('d M Y, h:i A', strtotime($order['order_date'])); ?>
+                                    </span>
+                                </div>
+                                <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 1rem; border-radius: 20px; font-size: 0.9rem;">
                                     <?php echo ucfirst($order['status']); ?>
                                 </span>
                             </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>Date: <?php echo date('d M Y', strtotime($order['order_date'])); ?></span>
-                                <span>Total: ₹<?php echo number_format($order['total_amount']); ?></span>
-                            </div>
-                            <div style="margin-top: 1rem;">
-                                <a href="../invoice.php?order=<?php echo $order['order_number']; ?>" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">View Invoice</a>
+                            
+                            <div class="order-body">
+                                <?php foreach($order_items as $item): ?>
+                                <div class="order-item">
+                                    <div>
+                                        <span style="font-weight: 500;"><?php echo $item['name']; ?></span>
+                                        <span style="color: #666; margin-left: 1rem;">x<?php echo $item['quantity']; ?></span>
+                                    </div>
+                                    <span>₹<?php echo number_format($item['price'] * $item['quantity']); ?></span>
+                                </div>
+                                <?php endforeach; ?>
+                                
+                                <div class="order-total">
+                                    <span>Total</span>
+                                    <span>₹<?php echo number_format($order['total_amount']); ?></span>
+                                </div>
+                                
+                                <div class="order-actions">
+                                    <a href="../invoice.php?order=<?php echo $order['order_number']; ?>" class="btn btn-primary" style="padding: 0.5rem 1rem;">
+                                        <span class="material-icons" style="font-size: 1rem;">receipt</span>
+                                        View Invoice
+                                    </a>
+                                    <button onclick="reorder(<?php echo $order['id']; ?>)" class="btn btn-outline" style="padding: 0.5rem 1rem;">
+                                        <span class="material-icons" style="font-size: 1rem;">repeat</span>
+                                        Reorder
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <?php endforeach; ?>
@@ -623,7 +731,7 @@ include '../includes/header.php';
                 <?php endif; ?>
             </div>
             
-            <!-- Wishlist Section - FIXED -->
+            <!-- Wishlist Section -->
             <div id="section-wishlist" class="profile-section">
                 <div class="section-title">
                     <span class="material-icons">favorite</span>
@@ -631,7 +739,6 @@ include '../includes/header.php';
                 </div>
                 
                 <?php
-                // Get user's wishlist
                 $stmt = $pdo->prepare("SELECT w.*, p.name, p.price, p.sale_price, p.image 
                                        FROM wishlist w 
                                        JOIN products p ON w.product_id = p.id 
@@ -651,14 +758,14 @@ include '../includes/header.php';
                     </a>
                 </div>
                 <?php else: ?>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+                    <div class="wishlist-grid">
                         <?php foreach($wishlist_items as $item): ?>
-                        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; text-align: center;">
+                        <div class="wishlist-item">
                             <?php if(!empty($item['image'])): ?>
-                            <img src="<?php echo $item['image']; ?>" alt="<?php echo $item['name']; ?>" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 0.5rem;">
+                            <img src="<?php echo $item['image']; ?>" alt="<?php echo $item['name']; ?>" class="wishlist-image">
                             <?php else: ?>
-                            <div style="width: 100%; height: 150px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center;">
-                                <span class="material-icons" style="font-size: 50px; color: white;">favorite</span>
+                            <div class="wishlist-placeholder">
+                                <span class="material-icons">favorite</span>
                             </div>
                             <?php endif; ?>
                             <h4 style="margin: 0.5rem 0;"><?php echo $item['name']; ?></h4>
@@ -714,24 +821,24 @@ include '../includes/header.php';
 
 <script>
 function showSection(section) {
-    // Hide all sections
     document.querySelectorAll('.profile-section').forEach(el => {
         el.classList.remove('active');
     });
     
-    // Remove active class from all menu items
     document.querySelectorAll('.sidebar-menu a').forEach(el => {
         el.classList.remove('active');
     });
     
-    // Show selected section
     document.getElementById('section-' + section).classList.add('active');
-    
-    // Add active class to clicked menu item
     document.getElementById('menu-' + section).classList.add('active');
 }
 
-// Check URL hash for direct section access
+function reorder(orderId) {
+    if(confirm('Add all items from this order to your cart?')) {
+        window.location.href = '../reorder.php?order_id=' + orderId;
+    }
+}
+
 if(window.location.hash) {
     const section = window.location.hash.substring(1);
     if(['overview', 'profile', 'orders', 'wishlist', 'password'].includes(section)) {
